@@ -49,7 +49,6 @@ class SEN0366{
 	}
 	_serial.end();
 	for(int i = 0; i < 4; i++){
-	 Serial.print(buff[i]);
 	 _check += buff[i];
 	}
 	

@@ -1,6 +1,6 @@
 /************************************************************* 
  *Author: Jacob Gilsdorf (prompt-laser)
- *Version: V 0.1.3
+ *Version: V 0.1.4
  *Last Edit(D.M.Y): 17.04.2024
  *Description: Library for interfacing with an DFRobot SEN0366
  *             laser rangefinder  
@@ -11,6 +11,8 @@ class SEN0366{
  private:
   char _address;
   unsigned char _check;
+  unsigned char buff[12];
+  float _returnVal;
   SoftwareSerial _serial = SoftwareSerial(2,3);
  
  public:
@@ -41,7 +43,7 @@ class SEN0366{
    delay(50);
    if(_serial.available() > 0){
 	_check = 0;
-    unsigned char buff[5] = {0};
+	ClearBuff();
 	for(int i = 0; i < 5; i++){
 		buff[i] = _serial.read();
 	}
@@ -73,7 +75,7 @@ class SEN0366{
    delay(50);
    if(_serial.available() > 0){
 	   _check = 0;
-    unsigned char buff[5] = {0};
+	ClearBuff();
 	for(int i = 0; i < 5; i++){
 		buff[i] = _serial.read();
 	}
@@ -116,7 +118,7 @@ class SEN0366{
    }
    delay(50);
    _check = 0;
-   unsigned char buff[11] = {0};
+   ClearBuff();
    int c = 0;
    while(_serial.available() > 0 && c < 11){
 	   buff[c] = _serial.read();
@@ -126,16 +128,15 @@ class SEN0366{
    for(int i = 0; i<=9; i++){
 	   _check += buff[i];
    }
-   unsigned char _returnedCheckByte = buff[10];
-   if(_returnedCheckByte == (unsigned char)~_check + 1){
-	float returnVal = 0;
-	returnVal += (buff[3] - 0x30) * 100;
-	returnVal += (buff[4] - 0x30) * 10;
-	returnVal += (buff[5] - 0x30) * 1;
-	returnVal += (buff[7] - 0x30) * .1;
-	returnVal += (buff[8] - 0x30) * .01;
-	returnVal += (buff[9] - 0x30) * .001;
-	return returnVal;
+   if(buff[10] == (unsigned char)~_check + 1){
+	_returnVal = 0;
+	_returnVal += (buff[3] - 0x30) * 100;
+	_returnVal += (buff[4] - 0x30) * 10;
+	_returnVal += (buff[5] - 0x30) * 1;
+	_returnVal += (buff[7] - 0x30) * .1;
+	_returnVal += (buff[8] - 0x30) * .01;
+	_returnVal += (buff[9] - 0x30) * .001;
+	return _returnVal;
    }else{
     return 999.999;
    }
@@ -155,7 +156,7 @@ class SEN0366{
    }
    delay(50);
    _check = 0x00;
-   unsigned char buff[12] = {0};
+   ClearBuff();
    int c = 0;
    while(_serial.available() > 0 && c < 12){
 	   buff[c] = _serial.read();
@@ -164,17 +165,16 @@ class SEN0366{
    for(int i = 0; i<11; i++){
 	   _check += buff[i];
    }
-   unsigned char _returnedCheckByte = buff[11];
-   if(_returnedCheckByte == (unsigned char)~_check + 1){
-	float returnVal = 0;
-	returnVal += (buff[3] - 0x30) * 100;
-	returnVal += (buff[4] - 0x30) * 10;
-	returnVal += (buff[5] - 0x30) * 1;
-	returnVal += (buff[7] - 0x30) * .1;
-	returnVal += (buff[8] - 0x30) * .01;
-	returnVal += (buff[9] - 0x30) * .001;
-	returnVal += (buff[10] - 0x30) * .0001;
-	return returnVal;
+   if(buff[11] == (unsigned char)~_check + 1){
+	_returnVal = 0;
+	_returnVal += (buff[3] - 0x30) * 100;
+	_returnVal += (buff[4] - 0x30) * 10;
+	_returnVal += (buff[5] - 0x30) * 1;
+	_returnVal += (buff[7] - 0x30) * .1;
+	_returnVal += (buff[8] - 0x30) * .01;
+	_returnVal += (buff[9] - 0x30) * .001;
+	_returnVal += (buff[10] - 0x30) * .0001;
+	return _returnVal;
    }else{
     return 999.999;
    }
@@ -194,7 +194,7 @@ class SEN0366{
    delay(50);
    if(_serial.available() > 0){
 	_check = 0;
-    unsigned char buff[4] = {0};
+	ClearBuff();
 	for(int i = 0; i < 4; i++){
 	 buff[i] = _serial.read();
 	}
@@ -226,7 +226,7 @@ class SEN0366{
    delay(50);
    if(_serial.available() > 0){
 	_check = 0;
-    unsigned char buff[4] = {0};
+	ClearBuff();
 	for(int i = 0; i < 3; i++){
 		buff[i] = _serial.read();
 		_check += buff[i];
@@ -239,6 +239,12 @@ class SEN0366{
 	}
    }else{
     return false;
+   }
+  }
+  
+  void ClearBuff(){
+   for(int i=0; i<12; i++){
+    buff[i] = 0;
    }
   }
 };

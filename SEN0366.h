@@ -1,7 +1,7 @@
 /************************************************************* 
  *Author: Jacob Gilsdorf (prompt-laser)
- *Version: V 0.1.1
- *Last Edit(D.M.Y): 22.11.2023
+ *Version: V 0.1.2
+ *Last Edit(D.M.Y): 17.04.2024
  *Description: Library for interfacing with an DFRobot SEN0366
  *             laser rangefinder  
  *************************************************************/
@@ -10,26 +10,23 @@
 class SEN0366{
  private:
   char _address;
-  int _tx;
-  int _rx;
+  SoftwareSerial _serial = SoftwareSerial(2,3);
  
  public:
   
   SEN0366(int tx, int rx){
-   _tx = tx;
-   _rx = rx;
+   _serial = SoftwareSerial(tx,rx);
+   _serial.begin(9600);
    _address = 0x080;
   }
   
   SEN0366(int tx, int rx, char address){
-	  _tx = tx;
-	  _rx = rx;
-	  _address = address;
+   _serial = SoftwareSerial(tx,rx);
+   _serial.begin(9600);
+   _address = address;
   }
   
   bool LaserOn(){
-   SoftwareSerial _serial(_tx,_rx);
-   _serial.begin(9600);
    unsigned char _check = 0;
    _serial.write(_address);
    _check += _address;
@@ -47,7 +44,6 @@ class SEN0366{
 	for(int i = 0; i < 5; i++){
 		buff[i] = _serial.read();
 	}
-	_serial.end();
 	for(int i = 0; i < 4; i++){
 	 _check += buff[i];
 	}
@@ -63,8 +59,6 @@ class SEN0366{
   }
   
   bool LaserOff(){
-   SoftwareSerial _serial(_tx,_rx);
-   _serial.begin(9600);
    unsigned char _check = 0;
    _serial.write(_address);
    _check += _address;
@@ -82,7 +76,6 @@ class SEN0366{
 	for(int i = 0; i < 5; i++){
 		buff[i] = _serial.read();
 	}
-	_serial.end();
 	for(int i = 0; i < 4; i++){
 	 _check += buff[i];
 	}
@@ -98,8 +91,6 @@ class SEN0366{
   }
   
   bool Shutdown(){
-   SoftwareSerial _serial(_tx,_rx);
-   _serial.begin(9600);
    unsigned char _check;
    _serial.write(_address);
    _check += _address;
@@ -108,13 +99,10 @@ class SEN0366{
    _serial.write(0x02);
    _check += 0x02;
    _serial.write(CalculateCheckByte(_check));
-   _serial.end();
   }
   
   float SingleMeasurement_1MM(){
    SetResolutionTo1MM();
-   SoftwareSerial _serial(_tx,_rx);
-   _serial.begin(9600);
    unsigned char _check = 0;
    _serial.write(_address);
    _check += _address;
@@ -133,7 +121,6 @@ class SEN0366{
 	   buff[c] = _serial.read();
 	   c++;
    }
-   _serial.end();
    for(int i = 0; i<10; i++){
 	   _check += buff[i];
    }
@@ -154,8 +141,6 @@ class SEN0366{
   
   float SingleMeasurement_Point1MM(){
    SetResolutionToPoint1MM();
-   SoftwareSerial _serial(_tx,_rx);
-   _serial.begin(9600);
    unsigned char _check = 0;
    _serial.write(_address);
    _check += _address;
@@ -194,8 +179,6 @@ class SEN0366{
   }
 	
   bool SetResolutionTo1MM(){
-   SoftwareSerial _serial(_tx,_rx);
-   _serial.begin(9600);
    unsigned char _check = 0;
    _serial.write(0xFA);
    _check += 0xFA;
@@ -213,7 +196,6 @@ class SEN0366{
 	for(int i = 0; i < 4; i++){
 	 buff[i] = _serial.read();
 	}
-	_serial.end();
 	for(int i = 0; i<3; i++){
 	 _check += buff[i];
 	}
@@ -229,8 +211,6 @@ class SEN0366{
   }
   
   bool SetResolutionToPoint1MM(){
-   SoftwareSerial _serial(_tx,_rx);
-   _serial.begin(9600);
    unsigned char _check = 0;
    _serial.write(0xFA);
    _check += 0xFA;

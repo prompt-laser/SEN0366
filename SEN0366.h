@@ -1,6 +1,6 @@
 /************************************************************* 
  *Author: Jacob Gilsdorf (prompt-laser)
- *Version: V 0.1.2
+ *Version: V 0.1.3
  *Last Edit(D.M.Y): 17.04.2024
  *Description: Library for interfacing with an DFRobot SEN0366
  *             laser rangefinder  
@@ -10,6 +10,7 @@
 class SEN0366{
  private:
   char _address;
+  unsigned char _check;
   SoftwareSerial _serial = SoftwareSerial(2,3);
  
  public:
@@ -27,7 +28,7 @@ class SEN0366{
   }
   
   bool LaserOn(){
-   unsigned char _check = 0;
+   _check = 0;
    _serial.write(_address);
    _check += _address;
    _serial.write(0x06);
@@ -36,7 +37,7 @@ class SEN0366{
    _check += 0x05;
    _serial.write(0x01);
    _check += 0x01;
-   _serial.write(CalculateCheckByte(_check));
+   _serial.write((unsigned char)~_check + 1);
    delay(50);
    if(_serial.available() > 0){
 	_check = 0;
@@ -48,7 +49,7 @@ class SEN0366{
 	 _check += buff[i];
 	}
 	
-	if(buff[4] == CalculateCheckByte(_check) && buff[3] == 0x01){
+	if(buff[4] == (unsigned char)~_check + 1 && buff[3] == 0x01){
 	 return true;
 	}else{
      return false;
@@ -59,7 +60,7 @@ class SEN0366{
   }
   
   bool LaserOff(){
-   unsigned char _check = 0;
+   _check = 0;
    _serial.write(_address);
    _check += _address;
    _serial.write(0x06);
@@ -68,7 +69,7 @@ class SEN0366{
    _check += 0x05;
    _serial.write((char)0x00);
    _check += 0x00;
-   _serial.write(CalculateCheckByte(_check));
+   _serial.write((unsigned char)~_check + 1);
    delay(50);
    if(_serial.available() > 0){
 	   _check = 0;
@@ -80,7 +81,7 @@ class SEN0366{
 	 _check += buff[i];
 	}
 	
-	if(buff[4] == CalculateCheckByte(_check) && buff[3] == 0x01){
+	if(buff[4] == (unsigned char)~_check + 1 && buff[3] == 0x01){
 	 return true;
 	}else{
      return false;
@@ -91,26 +92,26 @@ class SEN0366{
   }
   
   bool Shutdown(){
-   unsigned char _check;
+   _check = 0;
    _serial.write(_address);
    _check += _address;
    _serial.write(0x04);
    _check += 0x04;
    _serial.write(0x02);
    _check += 0x02;
-   _serial.write(CalculateCheckByte(_check));
+   _serial.write((unsigned char)~_check + 1);
   }
   
   float SingleMeasurement_1MM(){
    SetResolutionTo1MM();
-   unsigned char _check = 0;
+   _check = 0;
    _serial.write(_address);
    _check += _address;
    _serial.write(0x06);
    _check += 0x06;
    _serial.write(0x02);
    _check += 0x02;
-   _serial.write(CalculateCheckByte(_check));
+   _serial.write((unsigned char)~_check + 1);
    while(_serial.available() == 0){
    }
    delay(50);
@@ -121,11 +122,12 @@ class SEN0366{
 	   buff[c] = _serial.read();
 	   c++;
    }
-   for(int i = 0; i<10; i++){
+   Serial.println("");
+   for(int i = 0; i<=9; i++){
 	   _check += buff[i];
    }
    unsigned char _returnedCheckByte = buff[10];
-   if(_returnedCheckByte == CalculateCheckByte(_check)){
+   if(_returnedCheckByte == (unsigned char)~_check + 1){
 	float returnVal = 0;
 	returnVal += (buff[3] - 0x30) * 100;
 	returnVal += (buff[4] - 0x30) * 10;
@@ -141,18 +143,18 @@ class SEN0366{
   
   float SingleMeasurement_Point1MM(){
    SetResolutionToPoint1MM();
-   unsigned char _check = 0;
+   _check = 0x00;
    _serial.write(_address);
    _check += _address;
    _serial.write(0x06);
    _check += 0x06;
    _serial.write(0x02);
    _check += 0x02;
-   _serial.write(CalculateCheckByte(_check));
+   _serial.write((unsigned char)~_check + 1);
    while(_serial.available() == 0){
    }
    delay(50);
-   _check = 0;
+   _check = 0x00;
    unsigned char buff[12] = {0};
    int c = 0;
    while(_serial.available() > 0 && c < 12){
@@ -163,7 +165,7 @@ class SEN0366{
 	   _check += buff[i];
    }
    unsigned char _returnedCheckByte = buff[11];
-   if(_returnedCheckByte == CalculateCheckByte(_check)){
+   if(_returnedCheckByte == (unsigned char)~_check + 1){
 	float returnVal = 0;
 	returnVal += (buff[3] - 0x30) * 100;
 	returnVal += (buff[4] - 0x30) * 10;
@@ -179,7 +181,7 @@ class SEN0366{
   }
 	
   bool SetResolutionTo1MM(){
-   unsigned char _check = 0;
+   _check = 0;
    _serial.write(0xFA);
    _check += 0xFA;
    _serial.write(0x04);
@@ -188,7 +190,7 @@ class SEN0366{
    _check += 0x0C;
    _serial.write(0x01);
    _check += 0x01;   
-   _serial.write(CalculateCheckByte(_check));
+   _serial.write((unsigned char)~_check + 1);
    delay(50);
    if(_serial.available() > 0){
 	_check = 0;
@@ -200,7 +202,7 @@ class SEN0366{
 	 _check += buff[i];
 	}
 	
-	if(buff[3] == CalculateCheckByte(_check) && buff[1] == 0x04){
+	if(buff[3] == (unsigned char)~_check + 1 && buff[1] == 0x04){
 	 return true;
 	}else{
      return false;
@@ -211,7 +213,7 @@ class SEN0366{
   }
   
   bool SetResolutionToPoint1MM(){
-   unsigned char _check = 0;
+   _check = 0;
    _serial.write(0xFA);
    _check += 0xFA;
    _serial.write(0x04);
@@ -220,7 +222,7 @@ class SEN0366{
    _check += 0x0C;
    _serial.write(0x02);
    _check += 0x02;   
-   _serial.write(CalculateCheckByte(_check));
+   _serial.write((unsigned char)~_check + 1);
    delay(50);
    if(_serial.available() > 0){
 	_check = 0;
@@ -230,7 +232,7 @@ class SEN0366{
 		_check += buff[i];
 	}
 	
-	if(_serial.read() == CalculateCheckByte(_check) && buff[1] == 0x04){
+	if(_serial.read() == (unsigned char)~_check + 1 && buff[1] == 0x04){
 	 return true;
 	}else{
      return false;
@@ -238,9 +240,5 @@ class SEN0366{
    }else{
     return false;
    }
-  }
-		  
-  unsigned char CalculateCheckByte(unsigned char _check){
-	  return ~_check + 1;
   }
 };

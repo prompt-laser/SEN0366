@@ -1,7 +1,7 @@
 /************************************************************* 
  *Author: Jacob Gilsdorf (prompt-laser)
- *Version: V 0.1.4
- *Last Edit(D.M.Y): 17.04.2024
+ *Version: V 0.1.5
+ *Last Edit(D.M.Y): 20.04.2024
  *Description: Library for interfacing with an DFRobot SEN0366
  *             laser rangefinder  
  *************************************************************/
@@ -124,7 +124,6 @@ class SEN0366{
 	   buff[c] = _serial.read();
 	   c++;
    }
-   Serial.println("");
    for(int i = 0; i<=9; i++){
 	   _check += buff[i];
    }
